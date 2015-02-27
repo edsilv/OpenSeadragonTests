@@ -25,7 +25,7 @@
 
         $(function() {
 
-            tileSources = [{"tileSource":"http://wellcomelibrary.org/iiif-img/b18035978-0/bc556d06-16f6-4525-b38c-e7203a9188c9/info.json"},{"tileSource":"http://wellcomelibrary.org/iiif-img/b18035978-0/3bc68bcb-8ac9-4cd1-9dd5-296aea55fe94/info.json"}];
+            tileSources = [{"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/35d6488f-8821-42b3-a550-39373b7e7e81/info.json"},{"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/7c6be516-8e28-4806-a120-359368a21a03/info.json"}];
 
             viewer = OpenSeadragon({
                 id: "viewer"
@@ -33,7 +33,9 @@
 
             viewer.addHandler('open', openTileSourcesHandler, this);
 
-            viewer.addHandler('animation-finish', function(viewer) {
+            viewer.addHandler('animation-finish', function() {
+                console.log(viewer.viewport.getZoom(true));
+
                 currentBounds = getBounds();
 
                 setHashParameter('bounds', serialiseBounds(currentBounds));
@@ -64,46 +66,13 @@
                 viewer.addTiledImage(tileSources[1]);
             }
 
-            // check for initial zoom/rotation params.
-            if (isFirstLoad) {
-                initialRotation = 0;
+            initialBounds = getHashParameter('bounds');
 
-                if (initialRotation) {
-                    viewer.viewport.setRotation(parseInt(initialRotation));
-                }
-
-                initialBounds = getHashParameter('bounds');
-
-                if (initialBounds) {
-                    initialBounds = deserialiseBounds(initialBounds);
-                    currentBounds = initialBounds;
-                    fitToBounds(currentBounds);
-                }
-            } else {
-                // it's not the first load
-                var settings = provider.getSettings();
-
-                // zoom to bounds unless setting disabled
-                if (settings.preserveViewport) {
-                    fitToBounds(currentBounds);
-                } else {
-                    viewer.goHome(true);
-                }
+            if (initialBounds) {
+                initialBounds = deserialiseBounds(initialBounds);
+                currentBounds = initialBounds;
+                fitToBounds(currentBounds);
             }
-
-            lastTilesNum = tileSources.length;
-            isFirstLoad = false;
-        }
-
-        function deserialiseBounds(bounds) {
-            var boundsArr = bounds.split(',');
-
-            return {
-                x: Number(boundsArr[0]),
-                y: Number(boundsArr[1]),
-                width: Number(boundsArr[2]),
-                height: Number(boundsArr[3])
-            };
         }
 
         function fitToBounds(bounds) {
@@ -117,19 +86,22 @@
         }
 
         function getBounds() {
-
-            var bounds = viewer.viewport.getBounds(true);
-
-            return {
-                x: roundNumber(bounds.x, 4),
-                y: roundNumber(bounds.y, 4),
-                width: roundNumber(bounds.width, 4),
-                height: roundNumber(bounds.height, 4)
-            };
+            return viewer.viewport.getBounds(true);
         }
 
         function serialiseBounds(bounds){
             return bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height;
+        }
+
+        function deserialiseBounds(bounds) {
+            var boundsArr = bounds.split(',');
+
+            return {
+                x: Number(boundsArr[0]),
+                y: Number(boundsArr[1]),
+                width: Number(boundsArr[2]),
+                height: Number(boundsArr[3])
+            };
         }
 
     </script>
