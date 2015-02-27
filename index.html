@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <div id="viewer" style="background: #000"></div>
+    <div id="viewer" style="width: 800px; height: 600px; background: #000"></div>
 
     <script>
 
@@ -41,9 +41,9 @@
                 setHashParameter('bounds', serialiseBounds(currentBounds));
             });
 
-            viewer.open(tileSources[0]);
-
             resize();
+
+            viewer.open(tileSources[0]);
         });
 
         function openTileSourcesHandler() {
