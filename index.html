@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="openseadragon.js"></script>
+</head>
+<body>
+
+    <div id="viewer" style="background: #000"></div>
+
+    <script>
+
+        var isFirstLoad = true;
+        var viewer, tileSources, currentBounds;
+
+        window.onresize = resize;
+
+        function resize() {
+            $('#viewer').width(window.innerWidth);
+            $('#viewer').height(window.innerHeight);
+        }
+
+        $(function() {
+
+            tileSources = [{"tileSource":"http://wellcomelibrary.org/iiif-img/b18035978-0/bc556d06-16f6-4525-b38c-e7203a9188c9/info.json"},{"tileSource":"http://wellcomelibrary.org/iiif-img/b18035978-0/3bc68bcb-8ac9-4cd1-9dd5-296aea55fe94/info.json"}];
+
+            viewer = OpenSeadragon({
+                id: "viewer"
+            });
+
+            viewer.addHandler('open', openTileSourcesHandler, this);
+
+            viewer.addHandler('animation-finish', function(viewer) {
+                currentBounds = getBounds();
+
+                setHashParameter('bounds', serialiseBounds(currentBounds));
+            });
+
+            viewer.open(tileSources[0]);
+
+            resize();
+        });
+
+        function openTileSourcesHandler() {
+
+            viewer.removeHandler('open', this.handler);
+
+            var viewingDirection = "left-to-right";
+
+            // if there's more than one tilesource, align them next to each other.
+            if (tileSources.length > 1) {
+                // check if tilesources should be aligned horizontally or vertically
+                if (viewingDirection == "top-to-bottom" || viewingDirection == "bottom-to-top") {
+                    // vertical
+                    tileSources[1].y = viewer.world.getItemAt(0).getBounds().y + viewer.world.getItemAt(0).getBounds().height + 0.01;
+                } else {
+                    // horizontal
+                    tileSources[1].x = viewer.world.getItemAt(0).getBounds().x + viewer.world.getItemAt(0).getBounds().width + 0.01;
+                }
+
+                viewer.addTiledImage(tileSources[1]);
+            }
+
+            // check for initial zoom/rotation params.
+            if (isFirstLoad) {
+                initialRotation = 0;
+
+                if (initialRotation) {
+                    viewer.viewport.setRotation(parseInt(initialRotation));
+                }
+
+                initialBounds = getHashParameter('bounds');
+
+                if (initialBounds) {
+                    initialBounds = deserialiseBounds(initialBounds);
+                    currentBounds = initialBounds;
+                    fitToBounds(currentBounds);
+                }
+            } else {
+                // it's not the first load
+                var settings = provider.getSettings();
+
+                // zoom to bounds unless setting disabled
+                if (settings.preserveViewport) {
+                    fitToBounds(currentBounds);
+                } else {
+                    viewer.goHome(true);
+                }
+            }
+
+            lastTilesNum = tileSources.length;
+            isFirstLoad = false;
+        }
+
+        function deserialiseBounds(bounds) {
+            var boundsArr = bounds.split(',');
+
+            return {
+                x: Number(boundsArr[0]),
+                y: Number(boundsArr[1]),
+                width: Number(boundsArr[2]),
+                height: Number(boundsArr[3])
+            };
+        }
+
+        function fitToBounds(bounds) {
+            var rect = new OpenSeadragon.Rect();
+            rect.x = bounds.x;
+            rect.y = bounds.y;
+            rect.width = bounds.width;
+            rect.height = bounds.height;
+
+            viewer.viewport.fitBounds(rect, true);
+        }
+
+        function getBounds() {
+
+            var bounds = viewer.viewport.getBounds(true);
+
+            return {
+                x: roundNumber(bounds.x, 4),
+                y: roundNumber(bounds.y, 4),
+                width: roundNumber(bounds.width, 4),
+                height: roundNumber(bounds.height, 4)
+            };
+        }
+
+        function serialiseBounds(bounds){
+            return bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height;
+        }
+
+    </script>
+
+</body>
+</html>
