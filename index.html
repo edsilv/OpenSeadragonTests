@@ -120,27 +120,31 @@
                 setHashParameter('bounds', serialiseBounds(currentBounds));
             });
 
+            viewer.addHandler('open', openTileSourcesHandler, this);
+
             openTiles();
 
             $('#prev').on('click', function() {
+                if (index == 0) return;
                 index -= 1;
                 openTiles();
             });
 
             $('#next').on('click', function() {
+                if (index + 1 == tiles.length) return;
                 index += 1;
                 openTiles();
             });
         });
 
         function openTiles() {
-            viewer.addHandler('open', openTileSourcesHandler, this);
+            //viewer.addHandler('open', openTileSourcesHandler, this);
             viewer.open(tiles[index][0]);
         }
 
         function openTileSourcesHandler() {
 
-            viewer.removeHandler('open', this.handler);
+            //viewer.removeHandler('open', this.handler);
 
             var tileSources = tiles[index];
 
