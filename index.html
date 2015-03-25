@@ -139,6 +139,7 @@
 
         function openTiles() {
             //viewer.addHandler('open', openTileSourcesHandler, this);
+            viewer.world.resetItems();
             viewer.open(tiles[index][0]);
         }
 
