@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
+    <script type="text/javascript" src="openseadragon.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #controls {
+            height: 50px;
+        }
+
+        #center {
+            width: 100px;
+            text-align: center;
+            margin: 0 auto 0 auto;
+            padding: 10px 0 0 0;
+        }
+
+        #prev {
+            float: left;
+        }
+
+        #next {
+            float: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="viewer" style="background: #000"></div>
+
+    <div id="controls">
+        <div id="center">
+            <a href="#" id="prev">prev</a>
+            <a href="#" id="next">next</a>
+        </div>
+    </div>
+
+    <script>
+
+        var isFirstLoad = true;
+        var viewer, index, tiles, currentBounds;
+
+        window.onresize = resize;
+
+        function resize() {
+            $('#viewer').width(window.innerWidth);
+            $('#viewer').height(window.innerHeight - $('#controls').height());
+        }
+
+        resize();
+
+        $(function() {
+
+            index = 0;
+
+            tiles = [
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/915c979c-5c57-4887-94aa-f3dd6d611ef8/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/854ac0ff-c9fa-4b7d-a078-1053328817ee/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/23c2e643-3eed-4eae-aeec-e28b33fad1ed/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/8a52a0f6-a4e8-4a51-baf1-4ab59ae16b10/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/7965b869-c98e-417c-b47c-1cdbe2099713/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/8b39bd38-e25e-4834-bbc9-2d916f7c5d52/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/e4bc1ba0-7f70-4974-b770-00772ae8440e/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/cccfc64a-33de-4c07-91ff-9f0c634fa778/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/35d6488f-8821-42b3-a550-39373b7e7e81/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/7c6be516-8e28-4806-a120-359368a21a03/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/5af75c73-6fe2-45f8-88bf-45faa10bb4fc/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/28f392e2-9297-4315-b7a2-2dc497a2e500/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/ea966a59-ec00-4b75-bc13-c0638e92a68f/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/56422202-5d15-4b79-bdd8-0556d74f334c/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/c063da72-789b-4c67-b53c-011244b06d0d/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/cce0ee9e-6e33-47c1-8844-2fde81aea786/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/4d59ee87-b95a-4a5a-99ce-28625b7f4986/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/cefdc13f-94f0-4bd4-bf5f-0528e40b8218/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/a8a3357d-c590-4ab2-ba81-2c8b20fc635f/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/3eb8de84-9e4e-44a0-91fe-bb2c2f67e529/info.json"}
+                ],
+                [
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/d39ffbc3-8aed-469e-afda-fb750ba2ac69/info.json"},
+                    {"tileSource":"http://wellcomelibrary.org/iiif-img/b19684915-0/0734418e-1c3e-4593-82f2-1d9d25e1172c/info.json"}
+                ]
+            ];
+
+            viewer = OpenSeadragon({
+                id: "viewer"
+            });
+
+            viewer.addHandler('animation-finish', function() {
+                console.log(viewer.viewport.getZoom(true));
+
+                currentBounds = getBounds();
+
+                setHashParameter('bounds', serialiseBounds(currentBounds));
+            });
+
+            viewer.addHandler('open', openTileSourcesHandler, this);
+
+            openTiles();
+
+            $('#prev').on('click', function() {
+                if (index == 0) return;
+                index -= 1;
+                openTiles();
+            });
+
+            $('#next').on('click', function() {
+                if (index + 1 == tiles.length) return;
+                index += 1;
+                openTiles();
+            });
+        });
+
+        function openTiles() {
+            //viewer.addHandler('open', openTileSourcesHandler, this);
+            viewer.world.resetItems();
+            viewer.open(tiles[index][0]);
+        }
+
+        function openTileSourcesHandler() {
+
+            //viewer.removeHandler('open', this.handler);
+
+            var tileSources = tiles[index];
+
+            tileSources[1].x = viewer.world.getItemAt(0).getBounds().x + viewer.world.getItemAt(0).getBounds().width + 0.01;
+
+            viewer.addTiledImage(tileSources[1]);
+
+            initialBounds = getHashParameter('bounds');
+
+            if (initialBounds) {
+                initialBounds = deserialiseBounds(initialBounds);
+                currentBounds = initialBounds;
+                fitToBounds(currentBounds);
+            }
+        }
+
+        function fitToBounds(bounds) {
+            var rect = new OpenSeadragon.Rect();
+            rect.x = bounds.x;
+            rect.y = bounds.y;
+            rect.width = bounds.width;
+            rect.height = bounds.height;
+
+            viewer.viewport.fitBounds(rect, true);
+        }
+
+        function getBounds() {
+            return viewer.viewport.getBounds(true);
+        }
+
+        function serialiseBounds(bounds){
+            return bounds.x + ',' + bounds.y + ',' + bounds.width + ',' + bounds.height;
+        }
+
+        function deserialiseBounds(bounds) {
+            var boundsArr = bounds.split(',');
+
+            return {
+                x: Number(boundsArr[0]),
+                y: Number(boundsArr[1]),
+                width: Number(boundsArr[2]),
+                height: Number(boundsArr[3])
+            };
+        }
+
+    </script>
+
+</body>
+</html>
