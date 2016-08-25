@@ -20,6 +20,14 @@
         //tileSources:     "http://openseadragon.github.io/example-images/duomo/duomo.dzi",
     });
 
+    osd.addHandler('add-item', function() {
+        osd.viewport.maxZoomLevel = osd.viewport.getZoom(true) * 8;
+    });
+
+    osd.addHandler('open', function() {
+        osd.viewport.maxZoomLevel = osd.viewport.getZoom(true) * 8;
+    });
+
     osd.addTiledImage({
         tileSource: resource,
         x: resource.x,
