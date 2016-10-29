@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <script src="openseadragon/openseadragon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+</head>
+
+<body>
+
+<!-- 
+    http://tryiiif.herokuapp.com/
+-->
+<div id="contentDiv" style="width:800px; height: 600px;"></div>
+
+<script type="text/javascript">
+
+    $(function() {
+
+        var osd = OpenSeadragon({
+            id:              "contentDiv",
+            prefixUrl:       "openseadragon/images/",
+            maxZoomLevel: 8,
+            autoHideControls: false,
+            tileSources:     ["http://45.55.234.144:8182/iiif/2/aHR0cHM6Ly91cGxvYWQud2lraW1lZGlhLm9yZy93aWtpcGVkaWEvY29tbW9ucy85Lzk1L0JpZ19QaW5lX2xhbmRzY2FwZS5qcGc=/info.json"]
+        });
+        
+    });
+
+</script>
+
+</body>
+</html>
